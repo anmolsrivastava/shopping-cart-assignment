@@ -1,0 +1,21 @@
+{
+  "name": "shopping-cart",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "shopping-cart",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -r esm --timeout 10000"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2"
+  },
+  "devDependencies": {
+    "chai": "^5.1.1",
+    "esm": "^3.2.25",
+    "mocha": "^10.5.2",
+    "sinon": "^18.0.0"
+  }
+}
