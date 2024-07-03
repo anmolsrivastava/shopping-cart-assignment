@@ -33,7 +33,7 @@ export class Cart {
     }
   }
 
-  getSubtotal() {
+  _getSubtotal() {
     return Number(
       Object.values(this.items)
         .reduce((subtotal, item) => {
