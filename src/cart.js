@@ -1,8 +1,10 @@
 import { ProductApiClient } from './productApiClient.js';
+import { DiscountManager } from './discountManager.js';
 
 export class Cart {
   constructor() {
     this.items = {};
+    this.discountManager = new DiscountManager();
   }
 
   async addProduct(product, quantity) {
@@ -11,6 +13,14 @@ export class Cart {
       this.items[product].quantity += quantity;
     } else {
       this.items[product] = { price, quantity };
+    }
+  }
+
+  applyDiscount(code) {
+    try {
+      this.discountManager.addDiscount(code);
+    } catch (error) {
+      console.error(`Failed to apply discount: ${error.message}`);
     }
   }
 
@@ -23,7 +33,7 @@ export class Cart {
     }
   }
 
-  _getSubtotal() {
+  getSubtotal() {
     return Number(
       Object.values(this.items)
         .reduce((subtotal, item) => {
@@ -33,23 +43,32 @@ export class Cart {
     );
   }
 
-  _getTax() {
-    const subtotal = this._getSubtotal();
-    return Number((subtotal * 0.125).toFixed(2));
+  _getTax(discountedSubtotal) {
+    return Number((discountedSubtotal * 0.125).toFixed(2));
   }
 
-  _getTotal() {
-    const subtotal = this._getSubtotal();
-    const tax = this._getTax();
-    return Number((subtotal + tax).toFixed(2));
+  _getDiscountedSubtotal(subtotal, discount) {
+    return subtotal - discount;
+  }
+
+  _getTotal(discountedSubtotal, tax) {
+    return Number((discountedSubtotal + tax).toFixed(2));
   }
 
   getCartState() {
+    const subtotal = this._getSubtotal();
+    const discount = this.discountManager.calculateDiscount(subtotal);
+    const discountedSubtotal = this._getDiscountedSubtotal(subtotal, discount);
+    const tax = this._getTax(discountedSubtotal);
+    const total = this._getTotal(discountedSubtotal, tax);
+
     return {
       items: this.items,
-      subtotal: this._getSubtotal(),
-      tax: this._getTax(),
-      total: this._getTotal(),
+      subtotal,
+      discount,
+      discountedSubtotal,
+      tax,
+      total,
     };
   }
 }

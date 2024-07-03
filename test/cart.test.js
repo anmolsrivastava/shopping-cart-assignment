@@ -37,7 +37,7 @@ describe('Cart', () => {
 
     cart.removeProduct(PRODUCTS.CORNFLAKES, 1);
     expect(state.items[PRODUCTS.CORNFLAKES]).to.be.undefined;
-});
+  });
 
   it('should calculate the correct subtotal, tax, and total', async () => {
     ProductApiClient.fetchProductPrice
@@ -55,5 +55,29 @@ describe('Cart', () => {
     expect(state.subtotal).to.equal(15.02);
     expect(state.tax).to.equal(1.88);
     expect(state.total).to.equal(16.9);
+  });
+
+  it('should apply multiple discounts correctly', async () => {
+    ProductApiClient.fetchProductPrice
+      .withArgs(PRODUCTS.CORNFLAKES)
+      .resolves(2.52);
+    ProductApiClient.fetchProductPrice
+      .withArgs(PRODUCTS.WEETABIX)
+      .resolves(9.98);
+
+    await cart.addProduct(PRODUCTS.CORNFLAKES, 1);
+    await cart.addProduct(PRODUCTS.CORNFLAKES, 1);
+    await cart.addProduct(PRODUCTS.WEETABIX, 1);
+
+    cart.applyDiscount('SAVE10');
+    cart.applyDiscount('FLAT5');
+
+    const state = cart.getCartState();
+
+    expect(state.subtotal).to.equal(15.02);
+    expect(state.discount).to.equal(6.50); // 10% of 15.02 + 5.00
+    expect(state.discountedSubtotal).to.equal(8.52);
+    expect(state.tax).to.equal(1.06);
+    expect(state.total).to.equal(9.58);
   });
 });
